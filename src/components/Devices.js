@@ -245,7 +245,6 @@ export class Devices extends React.Component {
             rowKey='id'
             onChange={this.onToggleSwitch}
             onRowClick={this.onRowClick}
-            check
           />
           <Renamer
             onRename={this.onRename}

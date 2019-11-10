@@ -5,7 +5,8 @@
   "scripts": {
     "start": "PORT=9000 react-scripts start",
     "build": "react-scripts build",
-    "lint": "eslint src/** --fix"
+    "lint": "eslint src/** --fix",
+    "test": "jest --config ./jest.config.json"
   },
   "dependencies": {
     "dayjs": "^1.8.15",
@@ -20,6 +21,7 @@
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.14.3",
     "husky": "^3.0.3",
+    "jest": "^24.9.0",
     "lint-staged": "^9.2.1",
     "prettier": "^1.18.2"
   },

@@ -1,0 +1,4 @@
+{
+   "roots": ["src/components/tests"],
+   "testRegex": "((\\.|/*.)(test))\\.js?$"
+}
