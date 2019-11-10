@@ -2,14 +2,26 @@ import React from 'react';
 import styled from 'styled-components';
 import { ArcSlider, Box, Checkbox, Flex, Table, Txt } from 'rendition';
 
+const BREAKPOINT = '700px';
+
 const DevicesContainer = styled(Flex)`
   flex-direction: column;
   margin-top: 1px;
+
+  @media (min-width: ${BREAKPOINT}) {
+    flex-direction: row;
+    margin-top: 38px;
+  }
 `;
 
 const TableContainer = styled(Box)`
   flex-grow: 1;
   order: 2;
+
+  @media (min-width: ${BREAKPOINT}) {
+    flex-grow: 3;
+    order: 1;
+  }
 `;
 
 const ControlContainer = styled(Box)`
@@ -17,10 +29,21 @@ const ControlContainer = styled(Box)`
   order: 1;
   margin-left: 0px;
   border-top-left-radius: 0;
+
+  @media (min-width: ${BREAKPOINT}) {
+    flex-grow: 2;
+    order: 2;
+    margin-left: 16px;
+    border-top-left-radius: 10px;
+  }
 `;
 
 const BrightnessController = styled(ArcSlider)`
   width: 150px;
+
+  @media (min-width: ${BREAKPOINT}) {
+    width: 400px;
+  }
 `;
 
 const columns = [
