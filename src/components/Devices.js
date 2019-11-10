@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { ArcSlider, Box, Checkbox, Flex, Table, Txt } from 'rendition';
+import { Triangle } from './Triangle';
 
 const BREAKPOINT = '700px';
 
@@ -178,6 +179,7 @@ export class Devices extends React.Component {
         </TableContainer>
 
         <ControlContainer bg='secondary.main'>
+          <Triangle position={this.state.selectedBulb} />
           <BrightnessController
             mx='auto'
             value={brightness / 100}
