@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { ArcSlider, Box, Checkbox, Flex, Table, Txt } from 'rendition';
 import { Triangle } from './Triangle';
+import { Renamer } from './Renamer';
 
 const BREAKPOINT = '700px';
 
@@ -101,6 +102,7 @@ export class Devices extends React.Component {
     this.onToggleSwitch = this.onToggleSwitch.bind(this);
     this.onBrightnessChange = this.onBrightnessChange.bind(this);
     this.onChange = this.onChange.bind(this);
+    this.onRename = this.onRename.bind(this);
   }
 
   onRowClick(row) {
@@ -146,6 +148,23 @@ export class Devices extends React.Component {
     this.setState({ bulbs: newBulbs });
   }
 
+  onRename(e) {
+    if (!this.state.inputFieldHidden) {
+      const bulb = this.state.bulbs[this.state.selectedBulb];
+      const backupBulbs = this.state.bulbs;
+      const newBulbs = this.state.bulbs;
+
+      newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, {
+        name: bulb.name,
+      });
+      this.setState({ bulbs: newBulbs });
+    }
+
+    this.setState(prevState => ({
+      inputFieldHidden: !prevState.inputFieldHidden,
+    }));
+  }
+
   componentDidMount() {
     fetch('http://localhost:3000/api/v1/device')
       .then(response => response.json())
@@ -163,6 +182,10 @@ export class Devices extends React.Component {
       this.state.bulbs.length > 0
         ? this.state.bulbs[this.state.selectedBulb].brightness
         : 0;
+    const placeholder =
+      this.state.bulbs.length > 0
+        ? this.state.bulbs[this.state.selectedBulb].name
+        : '';
 
     return (
       <DevicesContainer flex='1'>
@@ -175,6 +198,12 @@ export class Devices extends React.Component {
             onChange={this.onToggleSwitch}
             onRowClick={this.onRowClick}
             check
+          />
+          <Renamer
+            onRename={this.onRename}
+            onChange={this.onChange}
+            placeholder={placeholder}
+            inputFieldHidden={this.state.inputFieldHidden}
           />
         </TableContainer>
 
