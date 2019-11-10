@@ -4,6 +4,7 @@ import { ArcSlider, Box, Checkbox, Flex, Table, Txt } from 'rendition';
 import { Triangle } from './Triangle';
 import { Renamer } from './Renamer';
 
+const url = 'http://localhost:3000/api/v1/device';
 const BREAKPOINT = '700px';
 
 const DevicesContainer = styled(Flex)`
@@ -113,6 +114,7 @@ export class Devices extends React.Component {
 
   onToggleSwitch() {
     const bulb = this.state.bulbs[this.state.selectedBulb];
+    const backupBulbs = this.state.bulbs;
     const newBulbs = this.state.bulbs;
     const bulbSetting = bulb.active
       ? {
@@ -125,11 +127,27 @@ export class Devices extends React.Component {
         };
     newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, bulbSetting);
     this.setState({ bulbs: newBulbs });
+
+    fetch(`${url}/${bulb.id}`, {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: {
+          active: bulbSetting.active,
+        },
+      }),
+    }).catch(err => {
+      console.log(err);
+      this.setState({ bulbs: backupBulbs });
+    });
   }
 
   onBrightnessChange(value) {
     const brightness = (value * 100).toFixed(0);
     const bulb = this.state.bulbs[this.state.selectedBulb];
+    const backupBulbs = this.state.bulbs;
     const newBulbs = this.state.bulbs;
     const bulbSetting = {
       brightness: brightness,
@@ -138,14 +156,21 @@ export class Devices extends React.Component {
     };
     newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, bulbSetting);
     this.setState({ bulbs: newBulbs });
-  }
 
-  onChange(e) {
-    const newBulbs = this.state.bulbs;
-    const bulb = this.state.bulbs[this.state.selectedBulb];
-    const name = { name: e.target.value };
-    newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, name);
-    this.setState({ bulbs: newBulbs });
+    fetch(`${url}/${bulb.id}`, {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: {
+          brightness,
+        },
+      }),
+    }).catch(err => {
+      console.log(err);
+      this.setState({ bulbs: backupBulbs });
+    });
   }
 
   onRename(e) {
@@ -158,11 +183,34 @@ export class Devices extends React.Component {
         name: bulb.name,
       });
       this.setState({ bulbs: newBulbs });
+
+      fetch(`${url}/${bulb.id}`, {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: {
+            name: bulb.name,
+          },
+        }),
+      }).catch(err => {
+        console.log(err);
+        this.setState({ bulbs: backupBulbs });
+      });
     }
 
     this.setState(prevState => ({
       inputFieldHidden: !prevState.inputFieldHidden,
     }));
+  }
+
+  onChange(e) {
+    const newBulbs = this.state.bulbs;
+    const bulb = this.state.bulbs[this.state.selectedBulb];
+    const name = { name: e.target.value };
+    newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, name);
+    this.setState({ bulbs: newBulbs });
   }
 
   componentDidMount() {
