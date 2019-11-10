@@ -1,32 +1,27 @@
 import React from 'react';
-import { ArcSlider, Box, Checkbox, Flex, Table, Txt } from 'rendition';
 import styled from 'styled-components';
+import { ArcSlider, Box, Checkbox, Flex, Table, Txt } from 'rendition';
 
-const ControlContainer = styled(Box)`
-  border-top-left-radius: 10px;
+const DevicesContainer = styled(Flex)`
+  flex-direction: column;
+  margin-top: 1px;
 `;
 
-// TODO: Replace this with data loaded from the API
-const SAMPLE_DATA = [
-  {
-    id: 1,
-    name: 'Balcony',
-    active: true,
-    brightness: 50,
-  },
-  {
-    id: 2,
-    name: 'Bedroom 01',
-    active: false,
-    brightness: 70,
-  },
-  {
-    id: 3,
-    name: 'Bedroom 02',
-    active: false,
-    brightness: 70,
-  },
-];
+const TableContainer = styled(Box)`
+  flex-grow: 1;
+  order: 2;
+`;
+
+const ControlContainer = styled(Box)`
+  flex-grow: 1;
+  order: 1;
+  margin-left: 0px;
+  border-top-left-radius: 0;
+`;
+
+const BrightnessController = styled(ArcSlider)`
+  width: 150px;
+`;
 
 const columns = [
   {
@@ -41,7 +36,7 @@ const columns = [
     render(value) {
       return (
         <Flex>
-          <Checkbox toggle checked={value} onChange={console.log} mr={2} />
+          <Checkbox toggle checked={value} mr={2} />
           <Txt ml={2}>{value ? 'On' : 'Off'}</Txt>
         </Flex>
       );
@@ -57,24 +52,123 @@ const columns = [
   },
 ];
 
-export const Devices = () => {
-  return (
-    <Flex flex='1' mt={4}>
-      <Box flex='3' pl={3}>
-        <Table
-          flex='1'
-          columns={columns}
-          data={SAMPLE_DATA}
-          rowKey='id'
-          onRowClick={console.log}
-        />
-      </Box>
+const setDisplayBrightness = bulbsData => {
+  const bulbs = bulbsData.data;
 
-      <ControlContainer flex='2' ml={3} bg='secondary.main'>
-        <ArcSlider width='450px' mx='auto'>
-          <Txt color='white'>Brightness</Txt>
-        </ArcSlider>
-      </ControlContainer>
-    </Flex>
-  );
+  for (let i = 0; i < bulbs.length; i++) {
+    Object.assign(bulbs[i], {
+      brightness: bulbs[i].active ? bulbs[i].brightness : 0,
+      storedBrightness: bulbs[i].brightness,
+    });
+  }
+  return bulbs;
 };
+
+export class Devices extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedBulb: 0,
+      bulbs: [],
+      inputFieldHidden: true,
+    };
+
+    this.onRowClick = this.onRowClick.bind(this);
+    this.onToggleSwitch = this.onToggleSwitch.bind(this);
+    this.onBrightnessChange = this.onBrightnessChange.bind(this);
+    this.onChange = this.onChange.bind(this);
+  }
+
+  onRowClick(row) {
+    const newState = this.state;
+    newState.selectedBulb = row.id - 1;
+    this.setState(newState);
+  }
+
+  onToggleSwitch() {
+    const bulb = this.state.bulbs[this.state.selectedBulb];
+    const newBulbs = this.state.bulbs;
+    const bulbSetting = bulb.active
+      ? {
+          brightness: 0,
+          active: false,
+        }
+      : {
+          brightness: bulb.storedBrightness,
+          active: true,
+        };
+    newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, bulbSetting);
+    this.setState({ bulbs: newBulbs });
+  }
+
+  onBrightnessChange(value) {
+    const brightness = (value * 100).toFixed(0);
+    const bulb = this.state.bulbs[this.state.selectedBulb];
+    const newBulbs = this.state.bulbs;
+    const bulbSetting = {
+      brightness: brightness,
+      storedBrightness: brightness,
+      active: brightness < 1 ? false : true,
+    };
+    newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, bulbSetting);
+    this.setState({ bulbs: newBulbs });
+  }
+
+  onChange(e) {
+    const newBulbs = this.state.bulbs;
+    const bulb = this.state.bulbs[this.state.selectedBulb];
+    const name = { name: e.target.value };
+    newBulbs[this.state.selectedBulb] = Object.assign({}, bulb, name);
+    this.setState({ bulbs: newBulbs });
+  }
+
+  componentDidMount() {
+    fetch('http://localhost:3000/api/v1/device')
+      .then(response => response.json())
+      .then(bulbs => setDisplayBrightness(bulbs))
+      .then(bulbs => {
+        this.setState({
+          bulbs: bulbs,
+        });
+      })
+      .catch(err => console.log(err));
+  }
+
+  render() {
+    const brightness =
+      this.state.bulbs.length > 0
+        ? this.state.bulbs[this.state.selectedBulb].brightness
+        : 0;
+
+    return (
+      <DevicesContainer flex='1'>
+        <TableContainer pl={3}>
+          <Table
+            flex='1'
+            columns={columns}
+            data={this.state.bulbs}
+            rowKey='id'
+            onChange={this.onToggleSwitch}
+            onRowClick={this.onRowClick}
+            check
+          />
+        </TableContainer>
+
+        <ControlContainer bg='secondary.main'>
+          <BrightnessController
+            mx='auto'
+            value={brightness / 100}
+            onValueChange={this.onBrightnessChange}
+          >
+            <Txt color='white' fontSize={4}>
+              {brightness}%
+            </Txt>
+            <Txt color='white' fontSize={0}>
+              Brightness
+            </Txt>
+          </BrightnessController>
+        </ControlContainer>
+      </DevicesContainer>
+    );
+  }
+}
